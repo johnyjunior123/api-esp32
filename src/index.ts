@@ -7,7 +7,11 @@ const app = express();
 app.use(express.json())
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
-app.post('/', (req, res) => {
+app.get('/', (req, res) => {
+    res.send("Api em funcionamento...")
+})
+
+app.post('/macs', (req, res) => {
     const macs: string[] = req.body.mac_addresses;
 
     if (!macs || !Array.isArray(macs)) {
