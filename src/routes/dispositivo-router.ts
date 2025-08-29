@@ -12,6 +12,7 @@ type Dispositivo = {
 }
 
 dispositivoRouter.post('/macs', (req, res) => {
+    console.log('Recebendo dados...')
     type responseESP = { mac_addresses: string[]; local: string; aparelho: string };
     const esp32: responseESP = req.body;
     console.log(esp32)

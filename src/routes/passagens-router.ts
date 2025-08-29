@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { db } from "../database/db.js";
+import type { ResultQueryPassagens } from "../types/getPassagensPorPeriodo.js";
 
 export const passagemRouter = Router()
 
@@ -11,21 +12,39 @@ passagemRouter.get('/passagens', (req, res) => {
     }
 
     try {
-        // Total de passagens
         const totalStmt = db.prepare(`
-            SELECT COUNT(*) as totalCount
+            SELECT COUNT(*) as oportunidades, COUNT(DISTINCT dispositivo_id) as unicos
             FROM passagens
             WHERE local = ? AND data BETWEEN ? AND ?
         `);
-        const totalCount: { totalCount: number } = totalStmt.get(local, start, end) as { totalCount: number } || 0;
-        // Total de MACs únicos
-        const uniqueStmt = db.prepare(`
-            SELECT COUNT(DISTINCT dispositivo_id) as uniqueCount
+        const { oportunidades, unicos } = totalStmt.get(local, start, end) as ResultQueryPassagens
+        res.json({ local, inicio: start, fim: end, oportunidades, unicos });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao consultar passagens' });
+    }
+});
+
+passagemRouter.get('/passagens-por-periodo', (req, res) => {
+    const { inicio, fim } = req.query;
+
+    if (!inicio || !fim) {
+        return res.status(400).json({ error: 'Parâmetros obrigatórios: inicio, fim' });
+    }
+
+    try {
+        const totalStmt = db.prepare(`
+            SELECT 
+                local, 
+                COUNT(*) as oportunidades, 
+                COUNT(DISTINCT dispositivo_id) as unicos
             FROM passagens
-            WHERE local = ? AND data BETWEEN ? AND ?
+            WHERE data BETWEEN ? AND ?
+            GROUP BY local
         `);
-        const uniqueCount: { uniqueCount: number } = uniqueStmt.get(local, start, end) as { uniqueCount: number } || 0;
-        res.json({ local, inicio: start, fim: end, totalDePassagens: totalCount.totalCount, totalDePassagensUnicas: uniqueCount.uniqueCount });
+
+        let resultado = totalStmt.all(inicio, fim) as ResultQueryPassagens[];
+        res.json({ inicio, fim, locais: resultado });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao consultar passagens' });

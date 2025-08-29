@@ -16,8 +16,6 @@ app.get('/', (req, res) => {
     res.send("Api em funcionamento...")
 })
 
-
-
 app.get('/active-devices', (req, res) => {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     try {
@@ -33,7 +31,6 @@ app.get('/active-devices', (req, res) => {
         res.status(500).json({ error: 'Erro ao consultar dispositivos ativos' });
     }
 });
-
 
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor rodando na porta: ${PORT}`);
