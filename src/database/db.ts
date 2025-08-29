@@ -1,6 +1,6 @@
 import sqlite, { type Database } from 'better-sqlite3';
 
-export const db: Database = new sqlite('devices.db');
+export const db: Database = new sqlite('/data/devices.db');
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS dispositivos (
