@@ -1,25 +1,23 @@
-# Use Node LTS leve
-FROM node:20-alpine
+# Base: Node LTS Debian slim (tem Python e build tools)
+FROM node:20-slim
 
-# Diretório de trabalho dentro do container
+# Diretório de trabalho
 WORKDIR /usr/src/app
 
-# Copiar package.json e package-lock.json
-COPY package*.json ./
+# Copiar package.json e yarn.lock
+COPY package.json yarn.lock ./
 
-# Instalar dependências com build-from-source para garantir compatibilidade Linux
-RUN npm install --build-from-source better-sqlite3
+# Instalar dependências e recompilar módulos nativos
+RUN yarn install --frozen-lockfile --build-from-source
 
-# Copiar todo o código
+# Copiar o restante do código
 COPY . .
 
 # Compilar TypeScript
 RUN npx tsc
 
-# Expõe porta 80
+# Expor porta
 EXPOSE 80
-
-# Variáveis de ambiente padrão
 ENV PORT=80
 
 # Comando para rodar a API
