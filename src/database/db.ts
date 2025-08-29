@@ -20,4 +20,7 @@ CREATE TABLE IF NOT EXISTS passagens (
     ultima_deteccao TEXT DEFAULT (CURRENT_TIMESTAMP),
     FOREIGN KEY(dispositivo_id) REFERENCES dispositivos(id) ON DELETE CASCADE
 );
+
+DELETE FROM sqlite_sequence WHERE name='dispositivos';
+DELETE FROM sqlite_sequence WHERE name='passagens';
 `);
