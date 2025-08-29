@@ -3,10 +3,12 @@ import { db } from "./database/db.js";
 import dotenv from 'dotenv';
 import { dispositivoRouter } from "./routes/dispositivo-router.js";
 import { passagemRouter } from "./routes/passagens-router.js";
+import cors from 'cors';
 dotenv.config();
 
 const app = express();
 app.use(express.json())
+app.use(cors())
 app.use(dispositivoRouter)
 app.use(passagemRouter)
 
