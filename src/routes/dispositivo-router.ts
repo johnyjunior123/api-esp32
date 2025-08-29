@@ -22,7 +22,7 @@ dispositivoRouter.post('/macs', (req, res) => {
     }
 
     const now = new Date();
-    const nowStr = formatDateToAlagoasISO(now)
+    const nowStr = formatDateToAlagoasISO(now);
 
     const query = db.prepare(`
         INSERT INTO dispositivos (mac, ultima_deteccao)
@@ -94,9 +94,9 @@ dispositivoRouter.get('/macs/recent', (req: Request, res: Response) => {
     const updateUltimaPassagem = db.prepare(`
         UPDATE passagens SET ultima_deteccao = ? WHERE dispositivo_id = ?
     `);
-    const data = new Date();
+    const data = new Date(formatDateToAlagoasISO(new Date));
     const dataMenos30Min = new Date(data.getTime() - 30 * 60 * 1000);
-    updateUltimaPassagem.run(formatDateToAlagoasISO(dataMenos30Min), 193)
+    updateUltimaPassagem.run(formatDateToAlagoasISO(dataMenos30Min), 37)
 
     try {
         const rows = db.prepare(`
@@ -108,7 +108,7 @@ dispositivoRouter.get('/macs/recent', (req: Request, res: Response) => {
         const result = rows.map((row: any) => ({
             id: row.id,
             mac: row.mac_address,
-            ultima_deteccao: formatDateToAlagoasISO(new Date(row.ultima_deteccao))
+            ultima_deteccao: new Date(row.ultima_deteccao).toISOString()
         }));
 
         res.json(result);
