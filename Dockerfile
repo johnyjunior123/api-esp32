@@ -7,8 +7,8 @@ WORKDIR /usr/src/app
 # Copiar package.json e package-lock.json
 COPY package*.json ./
 
-# Instala dependências
-RUN npm install
+# Instalar dependências com build-from-source para garantir compatibilidade Linux
+RUN npm install --build-from-source better-sqlite3
 
 # Copiar todo o código
 COPY . .
