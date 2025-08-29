@@ -12,15 +12,16 @@ type Dispositivo = {
 }
 
 dispositivoRouter.post('/macs', (req, res) => {
-    console.log('Recebendo dados...')
+    console.log('Recebendo dados...');
     type responseESP = { mac_addresses: string[]; local: string; aparelho: string };
     const esp32: responseESP = req.body;
-    console.log(esp32)
+
     if (!esp32 || !Array.isArray(esp32.mac_addresses)) {
         return res.status(400).json({ error: 'MACs inválidos' });
     }
 
-    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const now = new Date();
+    const nowStr = now.toISOString().replace('T', ' ').substring(0, 19);
 
     const query = db.prepare(`
         INSERT INTO dispositivos (mac, ultima_deteccao)
@@ -32,22 +33,44 @@ dispositivoRouter.post('/macs', (req, res) => {
 
     const getDeviceId = db.prepare(`SELECT id FROM dispositivos WHERE mac = ?`);
 
+    const getLastPassagem = db.prepare(`
+        SELECT id, ultima_deteccao
+        FROM passagens
+        WHERE dispositivo_id = ?
+        ORDER BY ultima_deteccao DESC
+        LIMIT 1
+    `);
+
     const insertPassagem = db.prepare(`
         INSERT INTO passagens (local, aparelho, data, dispositivo_id)
         VALUES (?, ?, ?, ?)
     `);
 
+    const updateUltimaPassagem = db.prepare(`
+        UPDATE passagens SET ultima_deteccao = ? WHERE id = ?
+    `);
+
     const insertMany = db.transaction((macs: string[]) => {
         for (const mac of macs) {
-            // Inserir ou atualizar dispositivo
-            query.run(mac, now);
+            query.run(mac, nowStr);
 
-            // Recuperar ID do dispositivo
             const device: Dispositivo | undefined = getDeviceId.get(mac) as Dispositivo | undefined;
             if (!device) throw new Error(`Não foi possível recuperar o ID do dispositivo ${mac}`);
 
-            // Inserir passagem
-            insertPassagem.run(esp32.local, esp32.aparelho, now, device.id);
+            const lastPassagem = getLastPassagem.get(device.id) as { id: number; ultima_deteccao: string } | undefined;
+
+            if (lastPassagem) {
+                const ultimaData = new Date(lastPassagem.ultima_deteccao);
+                const diffMinutes = (now.getTime() - ultimaData.getTime()) / 1000 / 60;
+
+                if (diffMinutes >= 15) {
+                    insertPassagem.run(esp32.local, esp32.aparelho, nowStr, device.id);
+                } else {
+                    updateUltimaPassagem.run(nowStr, lastPassagem.id);
+                }
+            } else {
+                insertPassagem.run(esp32.local, esp32.aparelho, nowStr, device.id);
+            }
         }
     });
 
@@ -59,7 +82,6 @@ dispositivoRouter.post('/macs', (req, res) => {
         res.status(500).json({ error: 'Erro ao salvar MACs e passagens' });
     }
 });
-
 
 
 dispositivoRouter.get('/macs/recent', (req: Request, res: Response) => {

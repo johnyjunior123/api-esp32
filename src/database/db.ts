@@ -15,8 +15,9 @@ CREATE TABLE IF NOT EXISTS passagens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     local TEXT NOT NULL,
     aparelho TEXT NOT NULL,
-    data TEXT NOT NULL,
+    data TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     dispositivo_id INTEGER NOT NULL,
+    ultima_deteccao TEXT DEFAULT (CURRENT_TIMESTAMP),
     FOREIGN KEY(dispositivo_id) REFERENCES dispositivos(id) ON DELETE CASCADE
 );
 `);
