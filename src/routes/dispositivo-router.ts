@@ -53,7 +53,8 @@ dispositivoRouter.post('/macs', async (req, res) => {
 
 dispositivoRouter.get('/macs/recent', async (req: Request, res: Response) => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-
+    const dataMenos30Min = new Date(Date.now() - 30 * 60 * 1000); // 30 min em ms
+    await atualizarUltimaPassagem(dataMenos30Min, 1)
     try {
         const dispositivos = await pegarDispositivos24Horas(twentyFourHoursAgo)
         res.status(200).json(dispositivos);

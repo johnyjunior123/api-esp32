@@ -15,3 +15,10 @@ export const queryPegarDadosGeraisPassagens = `
     FROM passagens
     WHERE local = $1 AND data BETWEEN $2 AND $3
 `
+
+export const queryPegarDadosGeraisPassagensPorPeriodo = `
+    SELECT local, COUNT(*) as oportunidades, COUNT(DISTINCT dispositivo_id) as unicos
+    FROM passagens
+    WHERE data BETWEEN $1 AND $2
+    GROUP BY local
+`

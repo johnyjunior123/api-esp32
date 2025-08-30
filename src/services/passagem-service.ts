@@ -1,4 +1,4 @@
-import { queryAtualizarUltimaPassagem, queryInserirPassagem, queryPegarDadosGeraisPassagens, queryPegarUltimaPassagem } from "../database/consultas/consultas-passagem.js";
+import { queryAtualizarUltimaPassagem, queryInserirPassagem, queryPegarDadosGeraisPassagens, queryPegarDadosGeraisPassagensPorPeriodo, queryPegarUltimaPassagem } from "../database/consultas/consultas-passagem.js";
 import { db } from "../database/db.js";
 
 export async function pegarUltimaPassagem(dispositivoId: number): Promise<{ id: number; ultima_deteccao: Date } | null> {
@@ -41,6 +41,15 @@ export async function pegarDadosGeraisPassagens(local: string, inicio: Date, fim
     const { rows } = await db.query<{ totalDePassagens: number, totalDePassagensUnicas: number }>(queryPegarDadosGeraisPassagens, [local, inicio, fim])
     if (rows[0]) {
         return { local, inicio, fim, totalDePassagens: rows[0].totalDePassagens, totalDePassagensUnicas: rows[0].totalDePassagensUnicas }
+    }
+    return {}
+}
+
+
+export async function pegarDadosGeraisPassagensPorPeriodo(inicio: Date, fim: Date): Promise<DadosGerais | {}> {
+    const { rows } = await db.query<{ local: string, oportunidades: number, unicos: number }>(queryPegarDadosGeraisPassagensPorPeriodo, [inicio, fim])
+    if (rows[0]) {
+        return { inicio, fim, locais: rows }
     }
     return {}
 }
