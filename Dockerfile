@@ -1,26 +1,21 @@
-# Use Node LTS leve
-FROM node:20-alpine
+# Base: Node LTS Debian slim
+FROM node:20-slim
 
-# Diretório de trabalho dentro do container
 WORKDIR /usr/src/app
 
-# Copiar package.json e package-lock.json
-COPY package*.json ./
+# Copiar apenas manifests primeiro
+COPY package.json yarn.lock ./
 
-# Instala dependências
-RUN npm install
+# Instalar dependências (compila better-sqlite3 no Linux)
+RUN yarn
 
-# Copiar todo o código
+# Agora sim copiar código
 COPY . .
 
-# Compilar TypeScript
+# Compilar TS
 RUN npx tsc
 
-# Expõe porta 80
 EXPOSE 80
-
-# Variáveis de ambiente padrão
 ENV PORT=80
 
-# Comando para rodar a API
 CMD ["node", "dist/index.js"]

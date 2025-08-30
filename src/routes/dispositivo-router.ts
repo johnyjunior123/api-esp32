@@ -16,7 +16,8 @@ export type Dispositivo = {
 dispositivoRouter.post('/macs', async (req, res) => {
     type responseESP = { mac_addresses: string[]; local: string; aparelho: string };
     const esp32: responseESP = req.body;
-    console.log(esp32)
+    console.log(`Recebendo dados... ${esp32.mac_addresses.length} macs`);
+
     if (!esp32 || !Array.isArray(esp32.mac_addresses)) {
         return res.status(400).json({ error: 'MACs inválidos' });
     }
@@ -43,6 +44,7 @@ dispositivoRouter.post('/macs', async (req, res) => {
     } catch (err) {
         await db.query('ROLLBACK'); // desfaz tudo se deu erro
         console.error(err);
+        console.log('Erro ao salvador MACs e Passagens')
         res.status(500).json({ error: 'Erro ao salvar MACs e passagens' });
     }
 });

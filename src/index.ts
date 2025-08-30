@@ -3,10 +3,12 @@ import dotenv from 'dotenv';
 import { dispositivoRouter } from "./routes/dispositivo-router.js";
 import { passagemRouter } from "./routes/passagens-router.js";
 import { db } from "./database/db.js";
+import cors from 'cors';
 dotenv.config();
 
 const app = express();
 app.use(express.json())
+app.use(cors())
 app.use(dispositivoRouter)
 app.use(passagemRouter)
 
@@ -28,7 +30,6 @@ app.get('/active-devices', async (req, res) => {
         res.status(500).json({ error: 'Erro ao consultar dispositivos ativos' });
     }
 });
-
 
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor rodando na porta: ${PORT}`);
