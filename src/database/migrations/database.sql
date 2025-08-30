@@ -1,15 +1,3 @@
-import * as dotenv from 'dotenv';
-import { Pool } from 'pg';
-dotenv.config();
-
-export const db = new Pool({
-    connectionString: process.env.DATABASE_URL, // usa só a URL
-    max: 3,
-    idleTimeoutMillis: 30000,
-    ssl: true
-});
-
-await db.query(`
 CREATE TABLE IF NOT EXISTS dispositivos (
     id SERIAL PRIMARY KEY,
     mac TEXT UNIQUE NOT NULL,
@@ -26,4 +14,3 @@ CREATE TABLE IF NOT EXISTS passagens (
     dispositivo_id INTEGER NOT NULL REFERENCES dispositivos(id) ON DELETE CASCADE,
     ultima_deteccao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-`);

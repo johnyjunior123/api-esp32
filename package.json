@@ -1,13 +1,12 @@
 {
   "author": "'Johny <johnyjunior64@gmail.com>",
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
+    "@types/pg": "^8.15.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "sqlite3": "^5.1.7"
+    "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "@types/dotenv": "^8.2.3",
     "@types/express": "^5.0.3",
     "@types/node": "^24.3.0",

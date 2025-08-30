@@ -1,8 +1,8 @@
 import express from "express";
-import { db } from "./database/db.js";
 import dotenv from 'dotenv';
 import { dispositivoRouter } from "./routes/dispositivo-router.js";
 import { passagemRouter } from "./routes/passagens-router.js";
+import { db } from "./database/db.js";
 dotenv.config();
 
 const app = express();
@@ -16,18 +16,13 @@ app.get('/', (req, res) => {
     res.send("Api em funcionamento...")
 })
 
-
-
-app.get('/active-devices', (req, res) => {
+app.get('/active-devices', async (req, res) => {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     try {
-        const row: any = db.prepare(`
-      SELECT COUNT(*) AS active_devices
-      FROM devices_detected
-      WHERE detected_at >= ?
-    `).get(fiveMinutesAgo);
-
-        res.json({ active_devices: row.active_devices });
+        const query = ` SELECT COUNT(*) AS active_devices
+        FROM devices_detected WHERE detected_at >= $1`
+        const resultado = await db.query(query, [fiveMinutesAgo])
+        res.json({ active_devices: Number(resultado.rows[0].active_devices) });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erro ao consultar dispositivos ativos' });
