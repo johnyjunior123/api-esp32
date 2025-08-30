@@ -1,27 +1,21 @@
-# Base: Node LTS Debian slim (mais fácil para módulos nativos)
+# Base: Node LTS Debian slim
 FROM node:20-slim
 
-# Diretório de trabalho
 WORKDIR /usr/src/app
 
-# Instalar dependências de build
-RUN apt-get update && apt-get install -y python3 make g++ bash && rm -rf /var/lib/apt/lists/*
-
-# Copiar package.json e yarn.lock
+# Copiar apenas manifests primeiro
 COPY package.json yarn.lock ./
 
-# Instalar dependências, recompilando módulos nativos (better-sqlite3)
-RUN yarn install --frozen-lockfile --build-from-source better-sqlite3
+# Instalar dependências (compila better-sqlite3 no Linux)
+RUN yarn
 
-# Copiar o restante do código
+# Agora sim copiar código
 COPY . .
 
-# Compilar TypeScript
+# Compilar TS
 RUN npx tsc
 
-# Expor porta 80
 EXPOSE 80
 ENV PORT=80
 
-# Comando para rodar a API
 CMD ["node", "dist/index.js"]
