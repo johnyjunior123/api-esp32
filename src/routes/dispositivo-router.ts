@@ -34,7 +34,7 @@ dispositivoRouter.post('/macs', async (req, res) => {
                     inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
                     continue
                 }
-                atualizarUltimaPassagem(dispositivo.id)
+                atualizarUltimaPassagem(ultimaPassagem.ultima_deteccao, dispositivo.id)
             } else {
                 inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
             }

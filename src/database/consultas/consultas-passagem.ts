@@ -8,7 +8,7 @@ export const queryPegarUltimaPassagem = `SELECT id, ultima_deteccao
     ORDER BY ultima_deteccao DESC
     LIMIT 1`
 
-export const queryAtualizarUltimaPassagem = `UPDATE passagens SET ultima_deteccao = ? WHERE id = $1`
+export const queryAtualizarUltimaPassagem = `UPDATE passagens SET ultima_deteccao = $1 WHERE id = $2`
 
 export const queryPegarDadosGeraisPassagens = `
     SELECT COUNT(*) as totalDePassagens, COUNT(DISTINCT dispositivo_id) as totalDePassagensUnicas

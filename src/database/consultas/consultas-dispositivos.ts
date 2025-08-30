@@ -1,8 +1,11 @@
 export const insercaoDispositivos = `
-    INSERT INTO dispositivos (mac, ultima_deteccao) VALUES ($1, $2) 
-    ON CONFLICT(mac) 
-    DO UPDATE SET ultima_deteccao = excluded.ultima_deteccao, total_repeticoes = total_repeticoes + 1
-    RETURNING id
+    INSERT INTO dispositivos (mac, ultima_deteccao)
+    VALUES ($1, $2)
+    ON CONFLICT(mac)
+    DO UPDATE SET
+        ultima_deteccao = EXCLUDED.ultima_deteccao,
+        total_repeticoes = dispositivos.total_repeticoes + 1  -- <-- nome da tabela
+    RETURNING id;
     `
 
 export const getDispositivoPorId = `SELECT id FROM dispositivos WHERE mac = $1 LIMIT 1`

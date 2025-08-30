@@ -9,8 +9,8 @@ export async function pegarUltimaPassagem(dispositivoId: number): Promise<{ id: 
     return null
 }
 
-export async function atualizarUltimaPassagem(dispositivo_id: number) {
-    await db.query(queryAtualizarUltimaPassagem, [dispositivo_id])
+export async function atualizarUltimaPassagem(ultima_deteccao: Date, dispositivo_id: number) {
+    await db.query(queryAtualizarUltimaPassagem, [ultima_deteccao, dispositivo_id])
 }
 
 export async function inserirPassagem(local: string, aparelho: string, dispositivoId: number): Promise<void> {
@@ -23,7 +23,7 @@ export async function tempoDeSaidaMaiorQue15Minutos(passagem: {
 }): Promise<boolean> {
     const ultimaData = new Date(passagem.ultima_deteccao);
     console.log(ultimaData)
-    const diffMinutes = (new Date().getTime() - ultimaData.getTime()) / 1000 / 60;
+    const diffMinutes = (Date.now() - ultimaData.getTime()) / 1000 / 60;
     console.log(new Date())
     console.log(diffMinutes)
     return diffMinutes >= 15 ? true : false
