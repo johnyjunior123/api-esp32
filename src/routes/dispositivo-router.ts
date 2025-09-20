@@ -1,7 +1,7 @@
 import { db } from "../database/db.js";
 import { Router, type Request, type Response } from "express";
 import { inserirDispositivo, pegarDispositivos24Horas } from "../services/dispositivo-service.js";
-import { atualizarUltimaPassagem, inserirPassagem, pegarUltimaPassagem, tempoDeSaidaMaiorQue15Minutos } from "../services/passagem-service.js";
+import { atualizarUltimaPassagem, inserirPassagem, pegarUltimaPassagem, tempoDeSaidaMaiorQueUmaHora } from "../services/passagem-service.js";
 
 export const dispositivoRouter = Router()
 
@@ -28,15 +28,14 @@ dispositivoRouter.post('/macs', async (req, res) => {
             const dispositivo = await inserirDispositivo(mac)
             if (!dispositivo) throw new Error(`Não foi possível recuperar o ID do dispositivo ${mac}`);
             const ultimaPassagem = await pegarUltimaPassagem(dispositivo.id)
-
             if (ultimaPassagem) {
-                if (await tempoDeSaidaMaiorQue15Minutos(ultimaPassagem)) {
-                    inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
+                if (await tempoDeSaidaMaiorQueUmaHora(ultimaPassagem)) {
+                    await inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
                     continue
                 }
-                atualizarUltimaPassagem(ultimaPassagem.ultima_deteccao, dispositivo.id)
+                await atualizarUltimaPassagem(dispositivo.id)
             } else {
-                inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
+                await inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
             }
         }
         await db.query('COMMIT')
@@ -49,12 +48,8 @@ dispositivoRouter.post('/macs', async (req, res) => {
     }
 });
 
-
-
 dispositivoRouter.get('/macs/recent', async (req: Request, res: Response) => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const dataMenos30Min = new Date(Date.now() - 30 * 60 * 1000); // 30 min em ms
-    await atualizarUltimaPassagem(dataMenos30Min, 1)
     try {
         const dispositivos = await pegarDispositivos24Horas(twentyFourHoursAgo)
         res.status(200).json(dispositivos);

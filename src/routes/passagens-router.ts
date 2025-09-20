@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { pegarDadosGeraisPassagens, pegarDadosGeraisPassagensPorPeriodo } from "../services/passagem-service.js";
+import { pegarDadosGeraisPassagens, pegarDadosGeraisPassagensAgora, pegarDadosGeraisPassagensPorPeriodo } from "../services/passagem-service.js";
 
 export const passagemRouter = Router()
 
@@ -28,6 +28,17 @@ passagemRouter.get('/passagens-por-periodo', async (req, res) => {
 
     try {
         const resultado = await pegarDadosGeraisPassagensPorPeriodo(new Date(inicio.toString()), new Date(fim.toString()))
+        res.status(200).json(resultado);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erro ao consultar passagens' });
+    }
+});
+
+
+passagemRouter.get('/agora', async (req, res) => {
+    try {
+        const resultado = await pegarDadosGeraisPassagensAgora()
         res.status(200).json(resultado);
     } catch (err) {
         console.error(err);

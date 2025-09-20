@@ -11,6 +11,7 @@ export async function pegarDispositivoPorId(mac: string): Promise<Partial<Dispos
 }
 
 export async function inserirDispositivo(mac: string): Promise<{ id: number } | null> {
+    console.log(new Date())
     const { rows } = await db.query<{ id: number }>(insercaoDispositivos, [mac, new Date()])
     if (rows[0]) {
         return { ...rows[0] }

@@ -1,4 +1,4 @@
-import { queryAtualizarUltimaPassagem, queryInserirPassagem, queryPegarDadosGeraisPassagens, queryPegarDadosGeraisPassagensPorPeriodo, queryPegarUltimaPassagem } from "../database/consultas/consultas-passagem.js";
+import { queryAtualizarUltimaPassagem, queryInserirPassagem, queryPegarDadosGeraisPassagens, queryPegarPassagensUltimos5Min, queryPegarPassagensUnicasPorMinuto, queryPegarUltimaPassagem } from "../database/consultas/consultas-passagem.js";
 import { db } from "../database/db.js";
 
 export async function pegarUltimaPassagem(dispositivoId: number): Promise<{ id: number; ultima_deteccao: Date } | null> {
@@ -9,24 +9,21 @@ export async function pegarUltimaPassagem(dispositivoId: number): Promise<{ id: 
     return null
 }
 
-export async function atualizarUltimaPassagem(ultima_deteccao: Date, dispositivo_id: number) {
-    await db.query(queryAtualizarUltimaPassagem, [ultima_deteccao, dispositivo_id])
+export async function atualizarUltimaPassagem( dispositivo_id: number) {
+    await db.query(queryAtualizarUltimaPassagem, [dispositivo_id])
 }
 
 export async function inserirPassagem(local: string, aparelho: string, dispositivoId: number): Promise<void> {
     await db.query<{ id: number; ultima_deteccao: Date }>(queryInserirPassagem, [local, aparelho, dispositivoId])
 }
 
-export async function tempoDeSaidaMaiorQue15Minutos(passagem: {
+export async function tempoDeSaidaMaiorQueUmaHora(passagem: {
     id: number;
     ultima_deteccao: Date;
 }): Promise<boolean> {
     const ultimaData = new Date(passagem.ultima_deteccao);
-    console.log(ultimaData)
     const diffMinutes = (Date.now() - ultimaData.getTime()) / 1000 / 60;
-    console.log(new Date())
-    console.log(diffMinutes)
-    return diffMinutes >= 15 ? true : false
+    return diffMinutes >= 60;
 }
 
 type DadosGerais = {
@@ -47,9 +44,18 @@ export async function pegarDadosGeraisPassagens(local: string, inicio: Date, fim
 
 
 export async function pegarDadosGeraisPassagensPorPeriodo(inicio: Date, fim: Date): Promise<DadosGerais | {}> {
-    const { rows } = await db.query<{ local: string, oportunidades: number, unicos: number }>(queryPegarDadosGeraisPassagensPorPeriodo, [inicio, fim])
+    const { rows } = await db.query<{ local: string, oportunidades: number, unicos: number }>(queryPegarPassagensUnicasPorMinuto, [inicio, fim])
     if (rows[0]) {
         return { inicio, fim, locais: rows }
+    }
+    return {}
+}
+
+
+export async function pegarDadosGeraisPassagensAgora(): Promise<DadosGerais | {}> {
+    const { rows } = await db.query<{ local: string, oportunidades: number, unicos: number }>(queryPegarPassagensUltimos5Min)
+    if (rows[0]) {
+        return { locais: rows }
     }
     return {}
 }
