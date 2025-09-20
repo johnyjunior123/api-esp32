@@ -16,36 +16,46 @@ export type Dispositivo = {
 dispositivoRouter.post('/macs', async (req, res) => {
     type responseESP = { mac_addresses: string[]; local: string; aparelho: string };
     const esp32: responseESP = req.body;
-    console.log(`Recebendo dados... ${esp32.mac_addresses.length} macs`);
+
+    console.log(`Recebendo dados... ${esp32.mac_addresses?.length ?? 0} macs`);
 
     if (!esp32 || !Array.isArray(esp32.mac_addresses)) {
         return res.status(400).json({ error: 'MACs inválidos' });
     }
 
-    try {
-        await db.query('BEGIN')
-        for (const mac of esp32.mac_addresses) {
-            const dispositivo = await inserirDispositivo(mac)
-            if (!dispositivo) throw new Error(`Não foi possível recuperar o ID do dispositivo ${mac}`);
-            const ultimaPassagem = await pegarUltimaPassagem(dispositivo.id)
-            if (ultimaPassagem) {
-                if (await tempoDeSaidaMaiorQueUmaHora(ultimaPassagem)) {
-                    await inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
-                    continue
+    (async () => {
+        try {
+            await db.query('BEGIN');
+
+            for (const mac of esp32.mac_addresses) {
+                try {
+                    const dispositivo = await inserirDispositivo(mac);
+                    if (!dispositivo) throw new Error(`Falha ao inserir ${mac}`);
+
+                    const ultimaPassagem = await pegarUltimaPassagem(dispositivo.id);
+                    if (ultimaPassagem) {
+                        if (await tempoDeSaidaMaiorQueUmaHora(ultimaPassagem)) {
+                            await inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id);
+                        } else {
+                            await atualizarUltimaPassagem(dispositivo.id);
+                        }
+                    } else {
+                        await inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id);
+                    }
+                } catch (err) {
+                    console.error(`Erro no MAC ${mac}:`, err);
+                    // Continua mesmo se um MAC der erro
                 }
-                await atualizarUltimaPassagem(dispositivo.id)
-            } else {
-                await inserirPassagem(esp32.local, esp32.aparelho, dispositivo.id)
             }
+
+            await db.query('COMMIT');
+        } catch (err) {
+            await db.query('ROLLBACK');
+            console.error('Erro geral na transação:', err);
         }
-        await db.query('COMMIT')
-        res.json({ success: true, count: esp32.mac_addresses.length });
-    } catch (err) {
-        await db.query('ROLLBACK'); // desfaz tudo se deu erro
-        console.error(err);
-        console.log('Erro ao salvador MACs e Passagens')
-        res.status(500).json({ error: 'Erro ao salvar MACs e passagens' });
-    }
+    })();
+
+    res.status(202).json({ received: true });
 });
 
 dispositivoRouter.get('/macs/recent', async (req: Request, res: Response) => {
