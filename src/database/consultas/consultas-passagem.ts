@@ -25,7 +25,7 @@ export const queryPegarPassagensUltimos5Min = `
            COUNT(*) AS oportunidades,
            COUNT(DISTINCT p.dispositivo_id) AS unicos
     FROM passagens p
-    WHERE p.ultima_deteccao >= NOW() - INTERVAL '15 minutes'
+    WHERE p.ultima_deteccao >= NOW() - INTERVAL '11 minutes'
     GROUP BY p.local
 `;
 
